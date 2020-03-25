@@ -191,6 +191,7 @@ RADIO_FREQ TEA5767::getFrequency() {
 
   unsigned long frequencyW = ((status[REG_1] & REG_1_PLL) << 8) | status[REG_2];
   frequencyW = ((frequencyW * QUARTZ / 4) - FILTER) / 10000;
+  frequencyW = round(frequencyW / 10.0) * 10;
 
   return ((RADIO_FREQ)frequencyW);
 }  // getFrequency
@@ -211,7 +212,6 @@ void TEA5767::setFrequency(RADIO_FREQ newF) {
   registers[0] = frequencyB >> 8;
   registers[1] = frequencyB & 0XFF;
   _saveRegisters();
-  delay(100);
 } // setFrequency()
 
 

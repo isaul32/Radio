@@ -17,7 +17,7 @@
 ///
 /// More documentation and source code is available at http://www.mathertel.de/Arduino
 ///
-/// ChangeLog see: radio.h 
+/// ChangeLog see: radio.h
 
 #include "Arduino.h"
 
@@ -200,7 +200,7 @@ void RADIO::checkRDS() { /* no chip : nothing to check */ }
 
 /// Send a 0.0.0.0 to the RDS receiver if there is any attached.
 /// This is to point out that there is a new situation and all existing data should be invalid from now on.
-void RADIO::clearRDS() { 
+void RADIO::clearRDS() {
   if (_sendRDS)
     _sendRDS(0, 0, 0, 0);
 } // clearRDS()
@@ -219,18 +219,20 @@ void RADIO::formatFrequency(char *s, uint8_t length) {
   RADIO_BAND b = getBand();
   RADIO_FREQ f = getFrequency();
 
-  if ((s != NULL) && (length > 10)) {
+  if ((s != NULL) && (length > 9)) {
     *s = '\0';
 
     if ((b == RADIO_BAND_FM) || (b == RADIO_BAND_FMWORLD)) {
+
       // " ff.ff MHz" or "fff.ff MHz"
       int16_to_s(s, (uint16_t)f);
 
       // insert decimal point
-      s[5] = s[4]; s[4] = s[3]; s[3] = '.';
+      s[4] = s[3];
+      s[3] = '.';
 
       // append units
-      strcpy(s+6, " MHz");
+      strcpy(s+5, " MHz");
     } // if
 
     //     f = _freqLow + (channel * _bandSteps);
