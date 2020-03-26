@@ -210,6 +210,13 @@ void TEA5767::setFrequency(RADIO_FREQ newF) {
   Serial.print('*'); Serial.println(frequencyB);
 
   registers[0] = frequencyB >> 8;
+  if (getMute())
+  {
+    registers[0] |= 0b10000000;
+  }
+  else {
+    registers[0] &= ~0b10000000;
+  }
   registers[1] = frequencyB & 0XFF;
   _saveRegisters();
 } // setFrequency()
