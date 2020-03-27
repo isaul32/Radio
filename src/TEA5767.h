@@ -33,12 +33,12 @@ class TEA5767 : public RADIO {
   public:
   const uint8_t MAXVOLUME = 15;   ///< max volume level for radio implementations.
   TEA5767();
-  
+
   bool   init();  // initialize library and the chip.
   void   term();  // terminate all radio functions.
-  
+
   // Control of the audio features
-  
+
   /// setVolume is a non-existing function in TEA5767. It will always me MAXVOLUME.
   void   setVolume(uint8_t newVolume);
 
@@ -51,6 +51,15 @@ class TEA5767 : public RADIO {
   // Control the mute function of the radio chip
   void   setMute(bool switchOn); // Switch to mute mode.
 
+  void   setRightMute(bool switchOn); // Switch to right mute mode.
+
+  void   setLeftMute(bool switchOn); // Switch to left mute mode.
+
+  void   setSoftMute(bool switchOn); // Switch to mute mode.
+
+  void   setHlsi(bool switchOn); // Switch hlsi mode.
+  bool   getHlsi();              // Retrieve hlsi mode.
+
   // Control of the core receiver
 
   // Control the frequency
@@ -61,14 +70,14 @@ class TEA5767 : public RADIO {
 
   void seekUp(bool toNextSender = true);   // start seek mode upwards
   void seekDown(bool toNextSender = true); // start seek mode downwards
-  
+
   void checkRDS(); // read RDS data from the current station and process when data available.
-  
+
   void getRadioInfo(RADIO_INFO *info);
   void getAudioInfo(AUDIO_INFO *info);
 
   // ----- debug Helpers send information to Serial port
-  
+
   void  debugScan();               // Scan all frequencies and report a status
   void  debugStatus();             // Report Info about actual Station
 
@@ -83,13 +92,14 @@ class TEA5767 : public RADIO {
   // store the current values of the 5 chip internal 8-bit registers
   uint8_t registers[5]; ///< registers for controlling the radio chip.
   uint8_t status[5];    ///< registers with the current status of the radio chip.
+  bool    _hlsi;        ///< High/low side injection. true = high, false = low
 
 
   // ----- low level communication to the chip using I2C bus
 
   void     _write16(uint16_t val);        // Write 16 Bit Value on I2C-Bus
   uint16_t _read16(void);
-  
+
   void _seek(bool seekUp = true);
   void _waitEnd();
 };

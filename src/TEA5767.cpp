@@ -48,7 +48,10 @@
 #define REG_3 0x02
 #define REG_3_MS   0x08
 #define REG_3_SSL  0x60
+#define REG_3_HLSI 0x10
 #define REG_3_SUD  0x80
+#define REG_3_MR  0x04
+#define REG_3_ML  0x02
 
 #define REG_4 0x03
 #define REG_4_SMUTE 0x08
@@ -82,9 +85,10 @@ bool TEA5767::init() {
   bool result = false; // no chip found yet.
   DEBUG_FUNC0("init");
 
-  registers[0] = 0x00;
-  registers[1] = 0x00;
-  registers[2] = 0xB0;
+  registers[REG_1] = 0x00;
+  registers[REG_2] = 0x00;
+  registers[REG_3] = 0xB0;
+  _hlsi = true;
   registers[REG_4] = REG_4_XTAL | REG_4_SMUTE;
 
 #ifdef IN_EUROPE
@@ -153,6 +157,62 @@ void TEA5767::setMute(bool switchOn)
   _saveRegisters();
 } // setMute()
 
+void TEA5767::setRightMute(bool switchOn)
+{
+  DEBUG_FUNC0("setRightMute");
+
+  if (switchOn) {
+    registers[REG_3] |= REG_3_MR;
+  } else {
+    registers[REG_3] &= ~REG_3_MR;
+  } // if
+  _saveRegisters();
+} // setRightMute()
+
+
+void TEA5767::setLeftMute(bool switchOn)
+{
+  DEBUG_FUNC0("setLeftMute");
+
+  if (switchOn) {
+    registers[REG_3] |= REG_3_ML;
+  } else {
+    registers[REG_3] &= ~REG_3_ML;
+  } // if
+  _saveRegisters();
+} // setLeftMute()
+
+void TEA5767::setSoftMute(bool switchOn)
+{
+  DEBUG_FUNC0("setSoftMute");
+  RADIO::setSoftMute(switchOn);
+
+  if (switchOn) {
+    registers[REG_4] |= REG_4_SMUTE;
+  } else {
+    registers[REG_4] &= ~REG_4_SMUTE;
+  } // if
+  _saveRegisters();
+} // setSoftMute()
+
+void TEA5767::setHlsi(bool switchOn)
+{
+  DEBUG_FUNC0("setHlsi");
+  _hlsi = switchOn;
+
+  if (switchOn) {
+    registers[REG_3] |= REG_3_HLSI;
+  } else {
+    registers[REG_3] &= ~REG_3_HLSI;
+  } // if
+  _saveRegisters();
+} // setHlsi()
+
+
+boolean TEA5767::getHlsi()
+{
+  return _hlsi;
+}
 
 // ----- Band and frequency control methods -----
 
@@ -209,15 +269,17 @@ void TEA5767::setFrequency(RADIO_FREQ newF) {
   unsigned int frequencyB = 4 * (newF * 10000L + FILTER) / QUARTZ;
   Serial.print('*'); Serial.println(frequencyB);
 
-  registers[0] = frequencyB >> 8;
+  registers[REG_1] = frequencyB >> 8;
+  registers[REG_2] = frequencyB & 0XFF;
+
+  // Set mute back if enabled
   if (getMute())
   {
-    registers[0] |= 0b10000000;
+    registers[REG_1] |= 0b10000000; // MUTE ON, data byte 1, byte 7
   }
   else {
-    registers[0] &= ~0b10000000;
+    registers[REG_1] &= ~0b10000000; // MUTE OFF, data byte 1, byte 7
   }
-  registers[1] = frequencyB & 0XFF;
   _saveRegisters();
 } // setFrequency()
 
@@ -273,6 +335,7 @@ void TEA5767::getRadioInfo(RADIO_INFO *info) {
   _readRegisters();
   if (status[STAT_3] & STAT_3_STEREO) info->stereo = true;
   info->rssi = (status[STAT_4] & STAT_4_ADC) >> 4;
+  info->mono = RADIO::getMono();
 
 } // getRadioInfo()
 
