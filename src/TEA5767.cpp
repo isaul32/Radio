@@ -93,7 +93,6 @@ bool TEA5767::init() {
   registers[REG_1] = 0x00;
   registers[REG_2] = 0x00;
   registers[REG_3] = 0xB0;
-  _hlsi = true;
   registers[REG_4] = REG_4_XTAL | REG_4_SMUTE;
 
 #ifdef IN_EUROPE
@@ -199,25 +198,6 @@ void TEA5767::setSoftMute(bool switchOn)
   } // if
   _saveRegisters();
 } // setSoftMute()
-
-void TEA5767::setHlsi(bool switchOn)
-{
-  DEBUG_FUNC0("setHlsi");
-  _hlsi = switchOn;
-
-  if (switchOn) {
-    registers[REG_3] |= REG_3_HLSI;
-  } else {
-    registers[REG_3] &= ~REG_3_HLSI;
-  } // if
-  _saveRegisters();
-} // setHlsi()
-
-
-boolean TEA5767::getHlsi()
-{
-  return _hlsi;
-}
 
 // ----- Band and frequency control methods -----
 
