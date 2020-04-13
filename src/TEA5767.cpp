@@ -315,7 +315,7 @@ void TEA5767::_saveRegisters()
     Serial.println(ack, DEC); //I2C error: 0 = success, 1 = data too long, 2 = rx NACK on address, 3 = rx NACK on data, 4 = other error
   } // if
 
-  delay(20); // See Fig 3 in datasheet. Have to wait 10ms after writing and let add some extra time
+  delay(10); // See Fig 3 in datasheet. Have to wait 10ms after writing and let add some extra time
 
 } // _saveRegisters
 
