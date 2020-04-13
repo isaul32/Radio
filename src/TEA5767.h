@@ -57,9 +57,6 @@ class TEA5767 : public RADIO {
 
   void   setSoftMute(bool switchOn); // Switch to mute mode.
 
-  void   setHlsi(bool switchOn); // Switch hlsi mode.
-  bool   getHlsi();              // Retrieve hlsi mode.
-
   // Control of the core receiver
 
   // Control the frequency
@@ -92,8 +89,6 @@ class TEA5767 : public RADIO {
   // store the current values of the 5 chip internal 8-bit registers
   uint8_t registers[5]; ///< registers for controlling the radio chip.
   uint8_t status[5];    ///< registers with the current status of the radio chip.
-  bool    _hlsi;        ///< High/low side injection. true = high, false = low
-
 
   // ----- low level communication to the chip using I2C bus
 

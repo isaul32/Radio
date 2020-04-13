@@ -47,7 +47,9 @@
 
 #define REG_3 0x02
 #define REG_3_MS   0x08
-#define REG_3_SSL  0x60
+#define REG_3_SSL_HIGH  0x60
+#define REG_3_SSL_MID  0x40
+#define REG_3_SSL_LOW  0x20
 #define REG_3_HLSI 0x10
 #define REG_3_SUD  0x80
 #define REG_3_MR  0x04
@@ -63,6 +65,9 @@
 #define REG_5_PLLREF  0x80
 #define REG_5_DTC     0x40
 
+
+#define STAT_1 0x01
+#define STAT_1_RF 0x80
 
 #define STAT_3 0x02
 #define STAT_3_STEREO 0x80
@@ -275,10 +280,10 @@ void TEA5767::setFrequency(RADIO_FREQ newF) {
   // Set mute back if enabled
   if (getMute())
   {
-    registers[REG_1] |= 0b10000000; // MUTE ON, data byte 1, byte 7
+    registers[REG_1] |= REG_1_MUTE; // MUTE ON, data byte 1, byte 7
   }
   else {
-    registers[REG_1] &= ~0b10000000; // MUTE OFF, data byte 1, byte 7
+    registers[REG_1] &= ~REG_1_MUTE; // MUTE OFF, data byte 1, byte 7
   }
   _saveRegisters();
 } // setFrequency()
@@ -288,12 +293,16 @@ void TEA5767::setFrequency(RADIO_FREQ newF) {
 void TEA5767::seekUp(bool toNextSender) {
   DEBUG_FUNC0("seekUp");
   _seek(true);
+  registers[REG_3] |= REG_3_SUD;
+  _saveRegisters();
 } // seekUp()
 
 
 /// Start seek mode downwards.
 void TEA5767::seekDown(bool toNextSender) {
   _seek(false);
+  registers[REG_3] &= REG_3_SUD;
+  _saveRegisters();
 } // seekDown()
 
 
@@ -326,6 +335,8 @@ void TEA5767::_saveRegisters()
     Serial.println(ack, DEC); //I2C error: 0 = success, 1 = data too long, 2 = rx NACK on address, 3 = rx NACK on data, 4 = other error
   } // if
 
+  delay(20); // See Fig 3 in datasheet. Have to wait 10ms after writing and let add some extra time
+
 } // _saveRegisters
 
 
@@ -333,9 +344,11 @@ void TEA5767::getRadioInfo(RADIO_INFO *info) {
   RADIO::getRadioInfo(info);
 
   _readRegisters();
+  info->active = true; // ???
   if (status[STAT_3] & STAT_3_STEREO) info->stereo = true;
   info->rssi = (status[STAT_4] & STAT_4_ADC) >> 4;
   info->mono = RADIO::getMono();
+  info->tuned = status[STAT_1] & STAT_1_RF;
 
 } // getRadioInfo()
 
@@ -362,6 +375,13 @@ void TEA5767::debugStatus()
 /// Seeks out the next available station
 void TEA5767::_seek(bool seekUp) {
   DEBUG_FUNC0("_seek");
+
+  // Set search off first
+  registers[REG_1] &= ~REG_1_SM;
+  _saveRegisters();
+
+  registers[REG_1] |= REG_1_SM; // Set search mode on
+  registers[REG_3] |= REG_3_SSL_LOW; // Set search stop level to low (See Table 11 in datasheet)
 } // _seek
 
 
