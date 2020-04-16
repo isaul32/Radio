@@ -252,7 +252,6 @@ void TEA5767::setFrequency(RADIO_FREQ newF) {
   _freq = newF;
 
   unsigned int frequencyB = 4 * (newF * 10000L + FILTER) / QUARTZ;
-  Serial.print('*'); Serial.println(frequencyB);
 
   registers[REG_1] = frequencyB >> 8;
   registers[REG_2] = frequencyB & 0XFF;
